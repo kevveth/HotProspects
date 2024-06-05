@@ -6,36 +6,34 @@
 //
 
 import SwiftUI
+import UserNotifications
+import SamplePackage
 
 struct ContentView: View {
-    let users = ["Tohru", "Yuki", "Kyo", "Momiji"]
-    @State private var selection: Set<String> = .init()
-    
-    private var countDescription: LocalizedStringKey {
-        "^[\(selection.count) person](inflect: true)"
-    }
     
     var body: some View {
-        NavigationStack {
-            List(users, id: \.self, selection: $selection) {
-                Text($0)
-            }
-            .navigationTitle("HotProspects")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    EditButton()
+        TabView {
+            ProspectsView(filter: .none)
+                .tabItem {
+                    Label("Everyone", systemImage: "person.3")
                 }
-            }
-            
-            if selection.isEmpty == false {
-                Text("You selected ") + Text(countDescription) + Text(": ") + Text("\(selection.formatted())")
-            }
+            ProspectsView(filter: .contacted)
+                .tabItem {
+                    Label("Contacted", systemImage: "checkmark.circle")
+                }
+            ProspectsView(filter: .uncontacted)
+                .tabItem {
+                    Label("Uncontacted", systemImage: "questionmark.diamond")
+                }
+            MeView()
+                .tabItem {
+                    Label("Me", systemImage: "person.crop.square")
+                }
         }
-        
     }
 }
 
 #Preview {
     ContentView()
+        .modelContainer(for: Prospect.self)
 }
