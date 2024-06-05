@@ -47,13 +47,15 @@ struct ProspectsView: View {
     var body: some View {
         NavigationStack {
             List(prospects, selection: $selectedProspects) { prospect in
-                HStack {
-                    if filter == .none {
-                        Image(systemName: prospect.isContacted ? "circle.fill" : "circle")
-                    }
+                NavigationLink(destination: EditView(prospect: prospect)) {
                     VStack(alignment: .leading) {
-                        Text(prospect.name)
-                            .font(.headline)
+                        HStack {
+                            Text(prospect.name)
+                                .font(.headline)
+                            if filter == .none {
+                                Image(systemName: prospect.isContacted ? "checkmark.circle" : "x.circle")
+                            }
+                        }
                         Text(prospect.emailAddress)
                             .foregroundStyle(.secondary)
                     }
@@ -85,26 +87,26 @@ struct ProspectsView: View {
                 }
                 .tag(prospect)
             }
-                .navigationTitle(title)
-                .toolbar {
-                    ToolbarItem {
-                        Button("Scan", systemImage: "qrcode.viewfinder") {
-    //                        let prospect = Prospect(name: "Paul Hudson", emailAddress: "paul@hackingwithswift.com", isContacted: false)
-    //                        modelContext.insert(prospect)
-                            isShowingScanner = true
-                        }
-                    }
-                    
-                    ToolbarItem(placement: .topBarLeading) {
-                        EditButton()
-                    }
-                    
-                    if selectedProspects.isEmpty == false {
-                        ToolbarItem(placement: .bottomBar) {
-                            Button("Delete Selected", action: delete)
-                        }
+            .navigationTitle(title)
+            .toolbar {
+                ToolbarItem {
+                    Button("Scan", systemImage: "qrcode.viewfinder") {
+                        //                        let prospect = Prospect(name: "Paul Hudson", emailAddress: "paul@hackingwithswift.com", isContacted: false)
+                        //                        modelContext.insert(prospect)
+                        isShowingScanner = true
                     }
                 }
+                
+                ToolbarItem(placement: .topBarLeading) {
+                    EditButton()
+                }
+                
+                if selectedProspects.isEmpty == false {
+                    ToolbarItem(placement: .bottomBar) {
+                        Button("Delete Selected", action: delete)
+                    }
+                }
+            }
         }
         .sheet(isPresented: $isShowingScanner) {
             CodeScannerView(codeTypes: [.qr], simulatedData: "Paul Hudson\npaul@hackingwithswift.com", completion: handleScan)
@@ -120,9 +122,9 @@ struct ProspectsView: View {
             content.subtitle = prospect.emailAddress
             content.sound = UNNotificationSound.default
             
-//            var dateComponents = DateComponents()
-//            dateComponents.hour = 9
-//            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
+            //            var dateComponents = DateComponents()
+            //            dateComponents.hour = 9
+            //            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
             
             let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)

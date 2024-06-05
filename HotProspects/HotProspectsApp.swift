@@ -12,7 +12,7 @@ import SwiftData
 struct HotProspectsApp: App {
     var body: some Scene {
         WindowGroup {
-            MeView()
+            ContentView()
         }
         .modelContainer(for: Prospect.self)
     }
