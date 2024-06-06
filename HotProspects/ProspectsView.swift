@@ -19,20 +19,20 @@ struct ProspectsView: View {
     var title: String {
         switch filter {
         case .none:
-            "Everyone"
+            return "Everyone"
         case .contacted:
-            "Contacted people"
+            return "Contacted people"
         case .uncontacted:
-            "Uncontacted people"
+            return "Uncontacted people"
         }
     }
     
-    @Query(sort: \Prospect.name) var prospects: [Prospect]
+    @Query var prospects: [Prospect]
     @Environment(\.modelContext) var modelContext
     @State private var isShowingScanner = false
     @State private var selectedProspects = Set<Prospect>()
     
-    init(filter: FilterType) {
+    init(filter: FilterType, sort: [SortDescriptor<Prospect>] = []) {
         self.filter = filter
         
         if filter != .none {
@@ -40,7 +40,9 @@ struct ProspectsView: View {
             
             _prospects = Query(filter: #Predicate {
                 $0.isContacted == showContactedOnly
-            }, sort: [SortDescriptor(\Prospect.name)])
+            }, sort: sort)
+        } else {
+            _prospects = Query(sort: sort)
         }
     }
     
@@ -73,7 +75,6 @@ struct ProspectsView: View {
                     } else {
                         Button("Mark Contacted", systemImage: "person.crop.circle.fill.badge.checkmark") {
                             prospect.isContacted.toggle()
-                            
                         }
                         .tint(.green)
                         
@@ -82,18 +83,16 @@ struct ProspectsView: View {
                         }
                         .tint(.orange)
                     }
-                    
-                    
                 }
                 .tag(prospect)
             }
             .navigationTitle(title)
             .toolbar {
                 ToolbarItem {
-                    Button("Scan", systemImage: "qrcode.viewfinder") {
-                        //                        let prospect = Prospect(name: "Paul Hudson", emailAddress: "paul@hackingwithswift.com", isContacted: false)
-                        //                        modelContext.insert(prospect)
+                    Button {
                         isShowingScanner = true
+                    } label: {
+                        Label("Scan", systemImage: "qrcode.viewfinder")
                     }
                 }
                 
@@ -122,9 +121,6 @@ struct ProspectsView: View {
             content.subtitle = prospect.emailAddress
             content.sound = UNNotificationSound.default
             
-            //            var dateComponents = DateComponents()
-            //            dateComponents.hour = 9
-            //            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
             
             let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
@@ -169,9 +165,7 @@ struct ProspectsView: View {
     }
 }
 
-
-
 #Preview {
-    ProspectsView(filter: .none)
+    ProspectsView(filter: .none, sort: [])
         .modelContainer(for: Prospect.self)
 }
